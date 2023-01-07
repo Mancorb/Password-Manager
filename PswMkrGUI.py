@@ -35,7 +35,8 @@ def HideAllFrames():
     verify_password_frame.pack_forget()
     modify_data_frame.pack_forget()
     delete_data_frame.pack_forget()
-    HODB_frame.pack_forget()
+#encript pasword
+
 #-------------------------------------------------------------
 
 #ADD PASSWORD Methods
@@ -415,88 +416,8 @@ def extractInfo(info):
     return res
 #-------------------------------------------------------------
 
-#Hands_On_DataBase Methods
-#--------------------------------------------------------
-#Hide all screens and open HODB Screen
-def OpenHOBDMenu():
-    HideAllFrames()
-    HODB_frame.pack(fill='both', expand=1)
-    HODBMenuStructure()
-#Structure of the HODB Screen
-def HODBMenuStructure():
-    backcol="white"
-    command=''
-    titulo=Label(HODB_frame,text="Hands on DataBase",bg = backcol,fg = "black",font = font_title)
-    titulo.place(x=10, y=5)
+#Create Password Page
 
-    comand=StringVar()
-    comandEntry=Entry(HODB_frame,textvariable=comand, bg="white", font="RobotoSlab 12")
-    comandEntry.place(x=10,y=70, height=35, width=400)
-
-    #List of options
-    var=StringVar()
-
-    RunCommandB= Button(HODB_frame,text="RUN", width="5", height="1",
-                        command=lambda:RunComand(comand.get(), var),
-                        font="Bebas_Neue 13 bold", fg='white', bg="black")
-    RunCommandB.place(x=420, y=70)
-    #chat space
-    resTxt = Label(HODB_frame,textvariable=var, relief="raised", fg='green', bg='black', width=65,height=22, anchor='n', padx=15, pady=10)
-    var.set("--------------------------------------------------------------------------\n--------------------------------------------------------------------------\n--------------\nWRITE AN SQL COMMAND\n--------------")
-    resTxt.place(x=6,y=113)
-#Check if the command is SELECT or otherwise
-def RunComand(comand, conTxt):
-    comand=comand.lower()
-    if comand=='':
-        conTxt.set("--------------------------------------------------------------------------\n--------------------------------------------------------------------------\n--------------\nWRITE A VALID SQL COMMAND\n--------------")
-    if 'select' in comand and 'from' in comand:
-        result=searchInfo(comand)
-    else:
-        result=execute(comand)
-    txt=adjustText(result)
-    conTxt.set("--------------------------------------------------------------------------\n--------------------------------------------------------------------------\n"+txt)
-#Run SELECT command in DB and return results
-def searchInfo(query):
-    con=sqlite3.connect('testbd.db')
-    cur=con.cursor()
-    try:
-        #Run command
-        cur.execute(query)
-
-        rows = cur.fetchall()
-        return(rows)
-
-    except Exception as e:
-        con.close()
-        result=f"--ERROR:{e}"
-        return result
-#Run DB command
-def execute(command):
-    try:
-        con=sqlite3.connect('testbd.db')
-        cur=con.cursor()
-        cur.execute(command)
-        con.commit()
-        con.close()
-        return(f"{command}\n--Success--")
-    except Exception as e:
-        con.close()
-        result=f"{command}\nERROR:\n{e}"
-        return result  
-#adjust the command line to match the screen
-def adjustText(txt):
-    txt=str(txt)
-    Result=""
-    counter=0
-    for i in txt:
-        Result=Result+i
-        if counter==100 or i==')':
-            Result=Result+'\n\n'
-            counter = 0
-        counter+=1
-    return Result
-
-#--------------------------------------------------------
 
 #root settings
 root=Tk()
@@ -509,9 +430,12 @@ font_title=("Bebas_Neue",35,"bold")
 font_normal=("Bebas_Neue",19)
 #colors
 global background_color
-background_color="#131f2e"
+background_color="#92c1f5"
 buttonColor="#1992b6"
-root ['bg']='#131f2e'
+root ['bg']= background_color
+
+textColor= "#242424"
+inputColor= "#ffffff"
 
 #----------------------------------------------------------------
 #variables
@@ -520,24 +444,24 @@ username=StringVar()
 password=""
 
 #main page
-titulo=Label(text="Create Password",bg = background_color,fg = "white",font = font_title)#main title
+titulo=Label(text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
 titulo.place(x=55, y=30)
 
 #user entries label
-site_label=Label(text="Web Site:", fg="white", bg = background_color, font=font_normal)
+site_label=Label(text="Web Site:", fg=textColor, bg = background_color, font=font_normal)
 site_label.place(x=50,y=165)
-user_label=Label(text="Username:", fg="white", bg = background_color, font=font_normal)
+user_label=Label(text="Username:", fg=textColor, bg = background_color, font=font_normal)
 user_label.place(x=40,y=255)
 #user entries
-site_entry = Entry(textvariable=site,bg="white", font="Bebas_Neue 12")#web site info
-user_entry = Entry(textvariable=username,bg="white", font="Bebas_Neue 19")#username
+site_entry = Entry(textvariable=site,bg=inputColor, font="Bebas_Neue 12")#web site info
+user_entry = Entry(textvariable=username,bg=inputColor, font="Bebas_Neue 19")#username
 site_entry.place(x=170,y=168, height=30, width=260)
 user_entry.place(x=170,y=260, height=30, width=260)
 
 #button for entry
 create_password_button = Button(text="Create", width="10", height="1",
                                 command=CreatePass,
-                                bg="white",font="Bebas_Neue 19 bold")
+                                bg=inputColor,font="Bebas_Neue 19 bold")
 create_password_button.place(x=175,y=360)
 #----------------------------------------------------------------
 
@@ -557,9 +481,6 @@ SearchMenu=Menu(menubar,tearoff=0)
 menubar.add_cascade(label="Search", command=OpenSearchMenu)
 #SearchMenu.add_command(label="Search Password", command=OpenSearchMenu)
 
-#Hands on Database menu
-HODBMenu=Menu(menubar,tearoff=0)
-menubar.add_cascade(label="DataBase",command=OpenHOBDMenu)
 #------------------------------------------------------------------
 #creation of frames
 #default frame is the "create frame"
@@ -568,7 +489,6 @@ verify_password_frame= Frame(root, width=500, height=500, bg=background_color)
 search_password_frame= Frame(root, width=500, height=500, bg='white')
 modify_data_frame= Frame(root, width=500, height=500, bg='white')
 delete_data_frame= Frame(root, width=500, height=500, bg='red')
-HODB_frame=Frame(root, width=500, height=500, bg='white')
 #------------------------------------------------------------------
 
 root.mainloop()

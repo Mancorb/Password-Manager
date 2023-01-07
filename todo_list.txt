@@ -1,0 +1,3 @@
+1.- Encript registries
+2.- for every new registry vew where the number is missing
+3.- chenge esthetics
