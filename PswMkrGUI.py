@@ -35,6 +35,7 @@ def HideAllFrames():
     verify_password_frame.pack_forget()
     modify_data_frame.pack_forget()
     delete_data_frame.pack_forget()
+    create_password_frame.pack_forget()
 #encript pasword
 
 #-------------------------------------------------------------
@@ -111,63 +112,6 @@ def CommitComfirm(site_data, user_data, pass_data):
 def ReturnToAdd():
     HideAllFrames()
     OpenAddMenu()
-#-------------------------------------------------------------
-
-#CREATE PASSWORD Methods
-#-------------------------------------------------------------
-def CreatePass():
-    lowerLetters=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-    UpperLetters=['A', 'B', 'C', 'D', 'E', 'F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    symbols=['|','#','$','&','%','/','-','+','_']
-    password=process(lowerLetters,UpperLetters,symbols)
-    NoticeCrtPas(password)
-#Process to generate the password
-def process(lowerLetters,UpperLetters,symbols):
-    final='' #Create empty string to store password
-    for i in range(30):#Create a password with 30 characters
-        key=randint(1,1000)#Chooses a number between 1 and 1000
-        #first checks if the number can be devided by 2
-        if (key%2)==0:
-            #It will add a random character from a specific list of characters
-            #depending if the "key" is greater of smaller then 500
-            if key<=500:
-                #uselower
-                temp=lowerLetters[randint(0,len(lowerLetters)-1)] 
-                #choose a character without overlapping ammount of characters available
-            if key>500:
-                #useupper
-                temp=UpperLetters[randint(0,len(UpperLetters)-1)]
-        else: #If it is not divisible by 2 it will do the same process but with different characters
-            if key<=500:
-                #useNumber
-                temp=str(randint(0,10))
-            if key>500:
-                #useSymbol
-                temp=symbols[randint(0,len(symbols)-1)]
-
-        #Adds selected character to the final string
-        final+=temp
-    return final#returns the final string (the generated password)
-#password created notification
-def NoticeCrtPas(password):
-    user_info=username.get()
-    site_info=site.get()
-
-    if site_info!="" or user_info!="":
-        try:
-            con=sqlite3.connect('testbd.db')
-            cur=con.cursor()
-            id=getID(cur)
-            cur.execute(f"INSERT INTO list VALUES('{site_info}','{user_info}','{password}',{id})")
-            con.commit()
-            con.close()
-            tkinter.messagebox.showinfo("Password created",f"Your password:{password} has been\nadded to the data base")
-            site_entry.delete(0, END)
-            user_entry.delete(0, END)
-        except Exception as e:
-            tkinter.messagebox.showerror("Error",e)
-    else:
-        tkinter.messagebox.showerror("Error",f"Please fill in the site and user data")
 #-------------------------------------------------------------
 
 #SEARCH PASSWORDS Methods
@@ -417,6 +361,114 @@ def extractInfo(info):
 #-------------------------------------------------------------
 
 #Create Password Page
+def OpenCreateMenu():
+    HideAllFrames()
+    search_password_frame.pack(fill='both', expand=1)
+    OpenCreateMenuStructure()
+
+def OpenCreateMenuStructure():
+    #variables
+    site=StringVar()
+    username=StringVar()
+
+    #main page
+    titulo=Label(text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo.place(x=55, y=30)
+
+    #user entries label
+    site_label=Label(text="Web Site:", fg=textColor, bg = background_color, font=font_normal)
+    site_label.place(x=50,y=165)
+    user_label=Label(text="Username:", fg=textColor, bg = background_color, font=font_normal)
+    user_label.place(x=40,y=255)
+    #user entries
+    site_entry = Entry(textvariable=site,bg=inputColor, font="Bebas_Neue 12")#web site info
+    user_entry = Entry(textvariable=username,bg=inputColor, font="Bebas_Neue 19")#username
+    site_entry.place(x=170,y=168, height=30, width=260)
+    user_entry.place(x=170,y=260, height=30, width=260)
+
+    #button for entry
+    create_password_button = Button(text="Create", width="10", height="1",
+                                    command=lambda:Creator(site,username,site_entry,user_entry),
+                                    bg=inputColor,font="Bebas_Neue 19 bold")
+    create_password_button.place(x=175,y=360)
+    #----------------------------------------------------------------
+
+    #menu config
+    menubar= Menu(root)
+    root.config(menu=menubar)
+
+    #create menu item
+    CreateMenu=Menu(menubar, tearoff=0)
+    menubar.add_cascade(label="Create", menu=CreateMenu)
+    CreateMenu.add_command(label="Create Password", command=HideAllFrames)
+    CreateMenu.add_separator()
+    CreateMenu.add_command(label="Add Password", command=OpenAddMenu)
+
+    #Search menu
+    SearchMenu=Menu(menubar,tearoff=0)
+    menubar.add_cascade(label="Search", command=OpenSearchMenu)
+
+#CREATE PASSWORD Methods
+#-------------------------------------------------------------
+def Creator(site, username,entry_s,entry_u):
+    NoticeCrtPas(site,username,CreatePass())
+    entry_s.delete(0, END)
+    entry_u.delete(0, END)
+
+
+def CreatePass():
+    lowerLetters=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    UpperLetters=['A', 'B', 'C', 'D', 'E', 'F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    symbols=['|','#','$','&','%','/','-','+','_']
+    password=process(lowerLetters,UpperLetters,symbols)
+    return password
+#Process to generate the password
+def process(lowerLetters,UpperLetters,symbols):
+    final='' #Create empty string to store password
+    for i in range(30):#Create a password with 30 characters
+        key=randint(1,1000)#Chooses a number between 1 and 1000
+        #first checks if the number can be devided by 2
+        if (key%2)==0:
+            #It will add a random character from a specific list of characters
+            #depending if the "key" is greater of smaller then 500
+            if key<=500:
+                #uselower
+                temp=lowerLetters[randint(0,len(lowerLetters)-1)] 
+                #choose a character without overlapping ammount of characters available
+            if key>500:
+                #useupper
+                temp=UpperLetters[randint(0,len(UpperLetters)-1)]
+        else: #If it is not divisible by 2 it will do the same process but with different characters
+            if key<=500:
+                #useNumber
+                temp=str(randint(0,10))
+            if key>500:
+                #useSymbol
+                temp=symbols[randint(0,len(symbols)-1)]
+
+        #Adds selected character to the final string
+        final+=temp
+    return final#returns the final string (the generated password)
+#password created notification
+def NoticeCrtPas(site,username,password):
+    user_info=username.get()
+    site_info=site.get()
+
+    if site_info!="" or user_info!="":
+        try:
+            con=sqlite3.connect('testbd.db')
+            cur=con.cursor()
+            id=getID(cur)
+            cur.execute(f"INSERT INTO list VALUES('{site_info}','{user_info}','{password}',{id})")
+            con.commit()
+            con.close()
+            tkinter.messagebox.showinfo("Password created",f"Your password:{password} has been\nadded to the data base")
+            
+        except Exception as e:
+            tkinter.messagebox.showerror("Error",e)
+    else:
+        tkinter.messagebox.showerror("Error",f"Please fill in the site and user data")
+#-------------------------------------------------------------
 
 
 #root settings
@@ -438,57 +490,35 @@ textColor= "#242424"
 inputColor= "#ffffff"
 
 #----------------------------------------------------------------
-#variables
-site=StringVar()
-username=StringVar()
-password=""
 
-#main page
-titulo=Label(text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
-titulo.place(x=55, y=30)
-
-#user entries label
-site_label=Label(text="Web Site:", fg=textColor, bg = background_color, font=font_normal)
-site_label.place(x=50,y=165)
-user_label=Label(text="Username:", fg=textColor, bg = background_color, font=font_normal)
-user_label.place(x=40,y=255)
-#user entries
-site_entry = Entry(textvariable=site,bg=inputColor, font="Bebas_Neue 12")#web site info
-user_entry = Entry(textvariable=username,bg=inputColor, font="Bebas_Neue 19")#username
-site_entry.place(x=170,y=168, height=30, width=260)
-user_entry.place(x=170,y=260, height=30, width=260)
-
-#button for entry
-create_password_button = Button(text="Create", width="10", height="1",
-                                command=CreatePass,
-                                bg=inputColor,font="Bebas_Neue 19 bold")
-create_password_button.place(x=175,y=360)
-#----------------------------------------------------------------
-
-#menu config
-menubar= Menu(root)
-root.config(menu=menubar)
-
-#create menu item
-CreateMenu=Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Create", menu=CreateMenu)
-CreateMenu.add_command(label="Create Password", command=HideAllFrames)
-CreateMenu.add_separator()
-CreateMenu.add_command(label="Add Password", command=OpenAddMenu)
-
-#Search menu
-SearchMenu=Menu(menubar,tearoff=0)
-menubar.add_cascade(label="Search", command=OpenSearchMenu)
 #SearchMenu.add_command(label="Search Password", command=OpenSearchMenu)
 
+main_pass=StringVar()
+
+titulo=Label(text="Login",bg = background_color,fg = textColor,font = font_title)#main title
+titulo.place(x=180, y=70)
+
+
+user_label=Label(text="Password", fg=textColor, bg = background_color, font=font_normal)
+user_label.place(x=190,y=220)
+
+site_entry = Entry(textvariable=main_pass,bg=inputColor)#web site info
+site_entry.place(x=120,y=260, height=30, width=260)
+
+create_password_button = Button(text="Enter", width="10", height="1",
+                                command=None,
+                                bg=inputColor,font="Bebas_Neue 19 bold")
+create_password_button.place(x=165,y=360)
 #------------------------------------------------------------------
 #creation of frames
-#default frame is the "create frame"
-add_password_frame= Frame(root, width=500, height=500, bg=background_color)
-verify_password_frame= Frame(root, width=500, height=500, bg=background_color)
-search_password_frame= Frame(root, width=500, height=500, bg='white')
-modify_data_frame= Frame(root, width=500, height=500, bg='white')
-delete_data_frame= Frame(root, width=500, height=500, bg='red')
+#default frame is the "login frame"
+sizes = 500
+add_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
+verify_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
+search_password_frame= Frame(root,width=sizes, height=sizes, bg='white')
+modify_data_frame= Frame(root,width=sizes, height=sizes, bg='white')
+delete_data_frame= Frame(root,width=sizes, height=sizes, bg='red')
+create_password_frame = Frame(root,width=sizes, height=sizes, bg='white')
 #------------------------------------------------------------------
 
 root.mainloop()
