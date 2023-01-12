@@ -1,3 +1,5 @@
 1.- Encript registries
+    1.1- obtain password, encript it 
+    1.2 if 
 2.- for every new registry vew where the number is missing
 3.- chenge esthetics
