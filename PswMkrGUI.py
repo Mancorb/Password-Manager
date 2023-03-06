@@ -3,6 +3,7 @@ import tkinter.messagebox
 from tkinter import ttk
 import sqlite3
 from random import randint
+
 #--------------------------------------------------------
 #methods
 #UNIVERSAL METHODS
@@ -46,13 +47,16 @@ def HideAllFrames():
     modify_data_frame.pack_forget()
     delete_data_frame.pack_forget()
     create_password_frame.pack_forget()
+    register_frame.pack_forget()
+    login_frame.pack_forget()
+
 #encript pasword
 #creates a conection with data base and returns conection and cursor.
 def SQLcon():
     
     con = sqlite3.connect("testbd.db")
     cur = con.cursor()
-    data = (con,cur)
+    data = [con,cur]
     return data
 
 def SQLclose(data):
@@ -428,6 +432,8 @@ def OpenCreateMenuStructure():
     #variables
     site=StringVar()
     username=StringVar()
+    textColor= "#242424"
+    inputColor= "#ffffff" 
 
     #main page
     titulo=Label(text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
@@ -472,7 +478,6 @@ def Creator(site, username,entry_s,entry_u):
     NoticeCrtPas(site,username,CreatePass())
     entry_s.delete(0, END)
     entry_u.delete(0, END)
-
 
 def CreatePass():
     lowerLetters=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
@@ -526,7 +531,47 @@ def NoticeCrtPas(site,username,password):
     else:
         tkinter.messagebox.showerror("Error",f"Please fill in the site and user data")
 #-------------------------------------------------------------
+#REGISTER SCREEN
+def openRegisterMenu():
+    HideAllFrames()
+    register_frame.pack(fill='both', expand=1)
+    RegisterStructure()
 
+def RegisterStructure():
+    font_title=("Bebas_Neue",35,"bold")
+    root.geometry("500x500")
+    main_pass=StringVar()
+    textColor= "#242424"
+    inputColor= "#ffffff"
+
+    titulo=Label(text="Register",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo.place(x=180, y=70)
+
+
+    user_label=Label(text="Password", fg=textColor, bg = background_color, font=font_normal)
+    user_label.place(x=190,y=220)
+
+    site_entry = Entry(textvariable=main_pass,bg=inputColor)#web site info
+    site_entry.place(x=120,y=260, height=30, width=260)
+
+    create_password_button = Button(text="Enter", width="10", height="1",
+                                    command=None,
+                                    bg=inputColor,font="Bebas_Neue 19 bold")
+    create_password_button.place(x=165,y=360)
+
+#-------------------------------------------------------------
+#LOGIN SCREEN
+def openLoginMenu():
+    HideAllFrames()
+    login_frame.pack(fill='both', expand=1)
+    LoginStructure()
+
+def LoginStructure():
+    root.geometry("500x500")
+    print("loginScreen")
+    pass
+#-------------------------------------------------------------
+#if no password is established open register menu, else open login menu
 def testForAuth():
     """Check if there is a registered master password to encript the data
     """
@@ -534,36 +579,25 @@ def testForAuth():
     con,cur = SQLcon()
     try:
         cur.execute("SELECT COUNT ('ID') FROM auth")
-        res = cur.fetchall()
+        res = cur.fetchone()[0]
         con.close()
         if res > 0:
             return True
         else: 
             return False
     except Exception as e:
-        print("ERROR: "+e)
+        print("ERROR: ",e)
         con.close()
         return False
-
-#if no password is established open register menu
-def checkInit():
-    if not testForAuth():
-        #open login shit
-        pass
-    else:
-        #open register shit
-        pass
-
-#else open login menu
-
+    
 #root settings
 root=Tk()
 root.title("Password Manager")
-root.geometry("500x500")
+root.geometry("300x100")
 root.resizable(False, False)
 root.iconbitmap("logo_icono.ico")
 #esthetics Font
-font_title=("Bebas_Neue",35,"bold")
+font_title=("Bebas_Neue",15,"bold")
 font_normal=("Bebas_Neue",19)
 #colors
 global background_color
@@ -572,31 +606,50 @@ buttonColor="#1992b6"
 root ['bg']= background_color
 
 textColor= "#242424"
-inputColor= "#ffffff"
+
+titulo=Label(text="Loading",bg = background_color,fg = textColor,font = font_title)#main title
+titulo.place(x=110, y=20)
+
+bar = ttk.Progressbar(root, orient=HORIZONTAL,length=260,mode='determinate')
+bar.place(x=20, y=60)
+
+i = 0
+j = False
+res = False
+def load():
+    """Show progress bar on screen. It will go after 50% once the program verifies if there is a password or not to encript
+    """
+    global i,res,j
+    if i<50 and not j:
+        bar.after(13,load)
+        bar["value"]=i
+        i+=1
+        return
+    
+    elif j and i<100:
+        bar.after(5,load)
+        bar["value"]=i
+        i+=1
+        return
+
+    if i == 50:
+        j = 1
+        if testForAuth():
+            res = True
+        load()
+    
+    elif i == 100:
+        
+        if res:
+            openLoginMenu()
+        else:
+            openRegisterMenu()
 
 #----------------------------------------------------------------
 
-#SearchMenu.add_command(label="Search Password", command=OpenSearchMenu)
-
-main_pass=StringVar()
-
-titulo=Label(text="Login",bg = background_color,fg = textColor,font = font_title)#main title
-titulo.place(x=180, y=70)
-
-
-user_label=Label(text="Password", fg=textColor, bg = background_color, font=font_normal)
-user_label.place(x=190,y=220)
-
-site_entry = Entry(textvariable=main_pass,bg=inputColor)#web site info
-site_entry.place(x=120,y=260, height=30, width=260)
-
-create_password_button = Button(text="Enter", width="10", height="1",
-                                command=None,
-                                bg=inputColor,font="Bebas_Neue 19 bold")
-create_password_button.place(x=165,y=360)
 #------------------------------------------------------------------
 #creation of frames
-#default frame is the "login frame"
+#default frame is the "loading frame"
 sizes = 500
 login_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
 register_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
@@ -607,5 +660,5 @@ modify_data_frame= Frame(root,width=sizes, height=sizes, bg='white')
 delete_data_frame= Frame(root,width=sizes, height=sizes, bg='red')
 create_password_frame = Frame(root,width=sizes, height=sizes, bg='white')
 #------------------------------------------------------------------
-
+load()
 root.mainloop()
