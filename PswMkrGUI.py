@@ -9,6 +9,14 @@ from random import randint
 #-------------------------------------------------------------
 #Get a new ID for the registry
 def getID(cur):
+    """Creates a new ID for the registry
+
+    Args:
+        cur (SQL cursor object): Database cursor
+
+    Returns:
+        int: registry ID
+    """
     cur.execute("SELECT id FROM List ORDER BY id;")
     id=cur.fetchall()
     try:
@@ -30,6 +38,8 @@ def getID(cur):
         tkinter.messagebox.showerror("Error",e)
 #hide all frames
 def HideAllFrames():
+    """Hide all the other windows
+    """
     add_password_frame.pack_forget()
     search_password_frame.pack_forget()
     verify_password_frame.pack_forget()
@@ -37,18 +47,32 @@ def HideAllFrames():
     delete_data_frame.pack_forget()
     create_password_frame.pack_forget()
 #encript pasword
+#creates a conection with data base and returns conection and cursor.
+def SQLcon():
+    
+    con = sqlite3.connect("testbd.db")
+    cur = con.cursor()
+    data = (con,cur)
+    return data
 
+def SQLclose(data):
+    data[1].commit()
+    data[0].close()
 #-------------------------------------------------------------
 
 #ADD PASSWORD Methods
 #-------------------------------------------------------------
 #Open add password menu
 def OpenAddMenu():
+    """Hide all the pages and load the 'add password' page
+    """
     HideAllFrames()
     add_password_frame.pack(fill='both', expand=1)
     AddMenuStructure()
 #Struture code for the Add Password Menu
 def AddMenuStructure():
+    """Structure of add menu screen
+    """
     backcol=background_color
     #title
     titulo=Label(add_password_frame,text="Add Password",bg = backcol,fg = "white",font = font_title)#main title
@@ -84,6 +108,16 @@ def AddMenuStructure():
     create_password_button.place(x=160,y=350)
 #Check if all the inputs are valid and gives notification
 def NoticeAddPas(user_info,site_info,pass_info,add_pass_entry,add_user_entry,add_site_entry):
+    """Adds a password to the database
+
+    Args:
+        user_info (Tkinter input info): username input content
+        site_info (Tkinter input info): website input info
+        pass_info (Tkinter input info): password input info
+        add_pass_entry (Tkinter Entry): object control of password entry
+        add_user_entry (Tkinter Entry): object control of username entry
+        add_site_entry (Tkinter Entry): object control of website entry
+    """
     user_info=user_info.get()
     site_info=site_info.get()
     pass_info=pass_info.get()
@@ -96,20 +130,27 @@ def NoticeAddPas(user_info,site_info,pass_info,add_pass_entry,add_user_entry,add
         CommitComfirm(site_info,user_info,pass_info)
 #Notify User data has been saved ---INCOMPLETE---
 def CommitComfirm(site_data, user_data, pass_data):
+    """Make a commitment in the databse with the input info values
+
+    Args:
+        site_data (String): data of the website
+        user_data (String): Username
+        pass_data (String): Password
+    """
     try:
-        con=sqlite3.connect('testbd.db')
-        cur=con.cursor()
+        con,cur = SQLcon()
         id=getID(cur)
 
         cur.execute(f"INSERT INTO list VALUES('{site_data}','{user_data}','{pass_data}',{id})")
-        con.commit()
-        con.close()
+        SQLclose([con,cur])
         tkinter.messagebox.showinfo("Registry created",f"Data:\nSite: {site_data}\nUser: {user_data}\nPass: {pass_data}\nClick ok to continue")
     except Exception as e:
         tkinter.messagebox.showerror("ERROR",f"{e}")
     ReturnToAdd()
 #Closes the screen and open the add password menu
 def ReturnToAdd():
+    """Closes the screen and open the add password menu
+    """
     HideAllFrames()
     OpenAddMenu()
 #-------------------------------------------------------------
@@ -118,11 +159,15 @@ def ReturnToAdd():
 #-------------------------------------------------------------
 #Open search password menu
 def OpenSearchMenu():
+    """Open search password menu
+    """
     HideAllFrames()
     search_password_frame.pack(fill='both', expand=1)
     OpenSearchMenuStructure()
 #Structure of the Search menu
 def OpenSearchMenuStructure():
+    """Setup the 'Search Menu' page
+    """
     backcol="white"
     titulo=Label(search_password_frame,text="Search Password",bg = backcol,fg = "black",font = font_title)
     titulo.place(x=10, y=5)
@@ -186,6 +231,13 @@ def OpenSearchMenuStructure():
     sub.place(x=10, y=400)
 #Search button for the search table
 def refresh(inputdata,type,table):
+    """Search for the info the the database and returns the results on screen
+
+    Args:
+        inputdata (String): description of what to look for
+        type (String): The name of the column to search in the table
+        table (db object): object to control the database
+    """
     for i in table.get_children():
         table.delete(i)
     try:
@@ -198,6 +250,12 @@ def refresh(inputdata,type,table):
         isrtDataInTbl(table)
 #Inserts the obtained data from the DB into the TKinter table
 def isrtDataInTbl(infotable,command=None):
+    """Grab Query result and place it into the on screen table
+
+    Args:
+        infotable (_type_): _description_
+        command (_type_, optional): _description_. Defaults to None.
+    """
     if command:
         conexion = sqlite3.connect('testbd.db')
         cur=conexion.cursor()
@@ -240,8 +298,7 @@ def DeleteMenuStructure(cel):
     DenyB.place (x=20,y=300,height=60, width=130)
 #Deletes the selected row from the DB
 def deleteRow(id):
-    con=sqlite3.connect('testbd.db')
-    cur=con.cursor()
+    con,cur = SQLcon()
     try:
         cur.execute(f"DELETE FROM List WHERE id={id}")
         con.commit()
@@ -253,8 +310,7 @@ def deleteRow(id):
 def copyRow(sel):
     try:
         root.clipboard_clear()
-        con=sqlite3.connect('testbd.db')
-        cur=con.cursor()
+        con,cur = SQLcon()
         cur.execute(f'SELECT pass FROM List WHERE id = {sel[0]}')
         pswrd=cur.fetchone()
         pswrd=str(pswrd[0])
@@ -270,8 +326,7 @@ def copyRow(sel):
 def updateRow(sel):
     try:
         id=extractInfo(sel[0])
-        con=sqlite3.connect('testbd.db')
-        cur=con.cursor()
+        con,cur = SQLcon()
         data=['site','user','pass']
         counter=0
         for i in data:
@@ -280,8 +335,12 @@ def updateRow(sel):
             data[counter]=extractInfo(temp)
             counter=counter+1
         openModifyMenu(data[1],data[0],data[2],id)
+
     except Exception as e:
         tkinter.messagebox.showwarning("Warning","Nothing selected")
+        con.close()
+    
+    
 #Hides all screens and shows the modify screen
 def openModifyMenu(user,site, pswrd,id):
     HideAllFrames()
@@ -336,15 +395,14 @@ def NoticeModification(site_data, user_data, pass_data,user,site, pswrd,id):
         pass_data=pswrd
         warn=True
     if warn: tkinter.messagebox.showwarning("Warning","The original information will be used to replace th empty input")
-    con=sqlite3.connect('testbd.db')
-    cur=con.cursor()
+    con,cur = SQLcon()
     try:
         cur.execute(f"UPDATE List SET site='{site_data}',user='{user_data}',pass='{pass_data}' WHERE id={id};")
-        con.commit()
+        SQLclose([con,cur])
         tkinter.messagebox.showinfo("UPDATED",'The database has been updated')
     except Exception as e:
         tkinter.messagebox.showerror("Error",e)
-    con.close()
+        con.close()
     OpenSearchMenu()
 #Hides the current screen and shows the search screen again
 def ReturnToSearch():
@@ -456,20 +514,47 @@ def NoticeCrtPas(site,username,password):
 
     if site_info!="" or user_info!="":
         try:
-            con=sqlite3.connect('testbd.db')
-            cur=con.cursor()
+            con,cur = SQLcon()
             id=getID(cur)
             cur.execute(f"INSERT INTO list VALUES('{site_info}','{user_info}','{password}',{id})")
-            con.commit()
-            con.close()
+            SQLclose([con,cur])
             tkinter.messagebox.showinfo("Password created",f"Your password:{password} has been\nadded to the data base")
             
         except Exception as e:
             tkinter.messagebox.showerror("Error",e)
+            con.close()
     else:
         tkinter.messagebox.showerror("Error",f"Please fill in the site and user data")
 #-------------------------------------------------------------
 
+def testForAuth():
+    """Check if there is a registered master password to encript the data
+    """
+    #Open database
+    con,cur = SQLcon()
+    try:
+        cur.execute("SELECT COUNT ('ID') FROM auth")
+        res = cur.fetchall()
+        con.close()
+        if res > 0:
+            return True
+        else: 
+            return False
+    except Exception as e:
+        print("ERROR: "+e)
+        con.close()
+        return False
+
+#if no password is established open register menu
+def checkInit():
+    if not testForAuth():
+        #open login shit
+        pass
+    else:
+        #open register shit
+        pass
+
+#else open login menu
 
 #root settings
 root=Tk()
@@ -513,6 +598,8 @@ create_password_button.place(x=165,y=360)
 #creation of frames
 #default frame is the "login frame"
 sizes = 500
+login_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
+register_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
 add_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
 verify_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
 search_password_frame= Frame(root,width=sizes, height=sizes, bg='white')
