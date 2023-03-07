@@ -78,8 +78,9 @@ def AddMenuStructure():
     """Structure of add menu screen
     """
     backcol=background_color
+    frcolor = "black"
     #title
-    titulo=Label(add_password_frame,text="Add Password",bg = backcol,fg = "white",font = font_title)#main title
+    titulo=Label(add_password_frame,text="Add Password",bg = backcol,fg = frcolor,font = font_title)#main title
     titulo.place(x=80, y=25)
 
     #input variables
@@ -88,13 +89,13 @@ def AddMenuStructure():
     add_pass=StringVar()
 
     #user inputs label
-    add_site_label=Label(add_password_frame,text="Site:", bg=backcol, fg = "white",font = font_normal)
+    add_site_label=Label(add_password_frame,text="Site:", bg=backcol, fg = frcolor,font = font_normal)
     add_site_label.place(x=30, y=130)
 
-    add_user_label=Label(add_password_frame,text="Username:", bg=backcol, fg = "white",font = font_normal)
+    add_user_label=Label(add_password_frame,text="Username:", bg=backcol, fg = frcolor,font = font_normal)
     add_user_label.place(x=30, y=200)
 
-    add_pass_label=Label(add_password_frame,text="Password:", bg=backcol, fg = "white",font = font_normal)
+    add_pass_label=Label(add_password_frame,text="Password:", bg=backcol, fg = frcolor,font = font_normal)
     add_pass_label.place(x=30, y=270)
 
     #user inputs
@@ -620,7 +621,7 @@ font_title=("Bebas_Neue",15,"bold")
 font_normal=("Bebas_Neue",19)
 #colors
 global background_color
-background_color="#92c1f5"
+background_color='white'
 buttonColor="#1992b6"
 root ['bg']= background_color
 
@@ -676,10 +677,10 @@ def load():
 #default frame is the "loading frame"
 sizes = 500
 
-login_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
-register_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
-add_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
-verify_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
+login_frame = Frame(root,width=sizes, height=sizes, bg='white')
+register_frame = Frame(root,width=sizes, height=sizes, bg='white')
+add_password_frame= Frame(root,width=sizes, height=sizes, bg='white')
+verify_password_frame= Frame(root,width=sizes, height=sizes, bg='white')
 search_password_frame= Frame(root,width=sizes, height=sizes, bg='white')
 modify_data_frame= Frame(root,width=sizes, height=sizes, bg='white')
 delete_data_frame= Frame(root,width=sizes, height=sizes, bg='red')
