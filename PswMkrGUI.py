@@ -233,6 +233,23 @@ def OpenSearchMenuStructure():
 
     sub=Label(search_password_frame,text="Options",bg = backcol,fg = "black",font = font_normal)
     sub.place(x=10, y=400)
+
+    #----------------------------------------------------------------
+
+    #menu config
+    menubar= Menu(root)
+    root.config(menu=menubar)
+
+    #create menu item
+    CreateMenu=Menu(menubar, tearoff=0)
+    menubar.add_cascade(label="Create", menu=CreateMenu)
+    CreateMenu.add_command(label="Create Password", command=OpenCreateMenu)
+    CreateMenu.add_separator()
+    CreateMenu.add_command(label="Add Password", command=OpenAddMenu)
+
+    #Search menu
+    menubar.add_cascade(label="Search", command=OpenSearchMenu)
+
 #Search button for the search table
 def refresh(inputdata,type,table):
     """Search for the info the the database and returns the results on screen
@@ -425,7 +442,7 @@ def extractInfo(info):
 #Create Password Page
 def OpenCreateMenu():
     HideAllFrames()
-    search_password_frame.pack(fill='both', expand=1)
+    create_password_frame.pack(fill='both', expand=1)
     OpenCreateMenuStructure()
 
 def OpenCreateMenuStructure():
@@ -436,41 +453,26 @@ def OpenCreateMenuStructure():
     inputColor= "#ffffff" 
 
     #main page
-    titulo=Label(text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo=Label(create_password_frame,text="Create Password",bg = background_color,fg = textColor,font = font_title)#main title
     titulo.place(x=55, y=30)
 
     #user entries label
-    site_label=Label(text="Web Site:", fg=textColor, bg = background_color, font=font_normal)
+    site_label=Label(create_password_frame,text="Web Site:", fg=textColor, bg = background_color, font=font_normal)
     site_label.place(x=50,y=165)
-    user_label=Label(text="Username:", fg=textColor, bg = background_color, font=font_normal)
+    user_label=Label(create_password_frame,text="Username:", fg=textColor, bg = background_color, font=font_normal)
     user_label.place(x=40,y=255)
     #user entries
-    site_entry = Entry(textvariable=site,bg=inputColor, font="Bebas_Neue 12")#web site info
-    user_entry = Entry(textvariable=username,bg=inputColor, font="Bebas_Neue 19")#username
+    site_entry = Entry(create_password_frame,textvariable=site,bg=inputColor, font="Bebas_Neue 12")#web site info
+    user_entry = Entry(create_password_frame,textvariable=username,bg=inputColor, font="Bebas_Neue 19")#username
     site_entry.place(x=170,y=168, height=30, width=260)
     user_entry.place(x=170,y=260, height=30, width=260)
 
     #button for entry
-    create_password_button = Button(text="Create", width="10", height="1",
+    create_password_button = Button(create_password_frame,text="Create", width="10", height="1",
                                     command=lambda:Creator(site,username,site_entry,user_entry),
                                     bg=inputColor,font="Bebas_Neue 19 bold")
     create_password_button.place(x=175,y=360)
-    #----------------------------------------------------------------
-
-    #menu config
-    menubar= Menu(root)
-    root.config(menu=menubar)
-
-    #create menu item
-    CreateMenu=Menu(menubar, tearoff=0)
-    menubar.add_cascade(label="Create", menu=CreateMenu)
-    CreateMenu.add_command(label="Create Password", command=HideAllFrames)
-    CreateMenu.add_separator()
-    CreateMenu.add_command(label="Add Password", command=OpenAddMenu)
-
-    #Search menu
-    SearchMenu=Menu(menubar,tearoff=0)
-    menubar.add_cascade(label="Search", command=OpenSearchMenu)
+    
 
 #CREATE PASSWORD Methods
 #-------------------------------------------------------------
@@ -624,10 +626,13 @@ root ['bg']= background_color
 
 textColor= "#242424"
 
-titulo=Label(text="Loading",bg = background_color,fg = textColor,font = font_title)#main title
+loading_frame = Frame(root,width=300,heigh=100,bg=background_color)
+loading_frame.pack(fill='both', expand=1)
+
+titulo=Label(loading_frame,text="Loading",bg = background_color,fg = textColor,font = font_title)#main title
 titulo.place(x=110, y=20)
 
-bar = ttk.Progressbar(root, orient=HORIZONTAL,length=260,mode='determinate')
+bar = ttk.Progressbar(loading_frame, orient=HORIZONTAL,length=260,mode='determinate')
 bar.place(x=20, y=60)
 
 i = 0
@@ -658,6 +663,7 @@ def load():
     
     elif i == 100:
         root.geometry("500x500")
+        loading_frame.pack_forget()
         if res:
             openLoginMenu()
         else:
@@ -669,6 +675,7 @@ def load():
 #creation of frames
 #default frame is the "loading frame"
 sizes = 500
+
 login_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
 register_frame = Frame(root,width=sizes, height=sizes, bg=background_color)
 add_password_frame= Frame(root,width=sizes, height=sizes, bg=background_color)
