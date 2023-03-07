@@ -543,18 +543,18 @@ def RegisterStructure():
 
     main_pass=StringVar()
 
-    titulo=Label(text="Register",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo=Label(register_frame,text="Register",bg = background_color,fg = textColor,font = font_title)#main title
     titulo.place(x=180, y=70)
 
 
-    user_label=Label(text="Password", fg=textColor, bg = background_color, font=font_normal)
+    user_label=Label(register_frame,text="Password", fg=textColor, bg = background_color, font=font_normal)
     user_label.place(x=190,y=220)
 
-    site_entry = Entry(textvariable=main_pass,bg=inputColor)#web site info
+    site_entry = Entry(register_frame,textvariable=main_pass,bg=inputColor)#web site info
     site_entry.place(x=120,y=260, height=30, width=260)
 
-    create_password_button = Button(text="Register password", width="10", height="1",
-                                    command=None,
+    create_password_button = Button(register_frame,text="Register password", width="10", height="1",
+                                    command=OpenSearchMenu,
                                     bg=inputColor,font="Bebas_Neue 19 bold")
     create_password_button.place(x=165,y=360)
 
@@ -568,23 +568,22 @@ def openLoginMenu():
 def LoginStructure():
     root.geometry("500x500")
     font_title=("Bebas_Neue",35,"bold")
-    root.geometry("500x500")
     main_pass=StringVar()
     textColor= "#242424"
     inputColor= "#ffffff"
 
-    titulo=Label(text="Register",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo=Label(login_frame,text="Register",bg = background_color,fg = textColor,font = font_title)#main title
     titulo.place(x=180, y=70)
 
 
-    user_label=Label(text="Password", fg=textColor, bg = background_color, font=font_normal)
+    user_label=Label(login_frame,text="Password", fg=textColor, bg = background_color, font=font_normal)
     user_label.place(x=190,y=220)
 
-    site_entry = Entry(textvariable=main_pass,bg=inputColor)#web site info
+    site_entry = Entry(login_frame,textvariable=main_pass,bg=inputColor)#web site info
     site_entry.place(x=120,y=260, height=30, width=260)
 
-    create_password_button = Button(text="Enter", width="10", height="1",
-                                    command=None,
+    create_password_button = Button(login_frame,text="Enter", width="10", height="1",
+                                    command=OpenSearchMenu,
                                     bg=inputColor,font="Bebas_Neue 19 bold")
     create_password_button.place(x=165,y=360)
     
@@ -634,6 +633,7 @@ bar.place(x=20, y=60)
 i = 0
 j = False
 res = False
+
 def load():
     """Show progress bar on screen. It will go after 50% once the program verifies if there is a password or not to encript
     """
@@ -657,7 +657,7 @@ def load():
         load()
     
     elif i == 100:
-        
+        root.geometry("500x500")
         if res:
             openLoginMenu()
         else:
