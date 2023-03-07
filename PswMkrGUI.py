@@ -60,8 +60,8 @@ def SQLcon():
     return data
 
 def SQLclose(data):
-    data[1].commit()
-    data[0].close()
+    data.commit()
+    data.close()
 #-------------------------------------------------------------
 
 #ADD PASSWORD Methods
@@ -146,7 +146,7 @@ def CommitComfirm(site_data, user_data, pass_data):
         id=getID(cur)
 
         cur.execute(f"INSERT INTO list VALUES('{site_data}','{user_data}','{pass_data}',{id})")
-        SQLclose([con,cur])
+        SQLclose(con)
         tkinter.messagebox.showinfo("Registry created",f"Data:\nSite: {site_data}\nUser: {user_data}\nPass: {pass_data}\nClick ok to continue")
     except Exception as e:
         tkinter.messagebox.showerror("ERROR",f"{e}")
@@ -419,7 +419,7 @@ def NoticeModification(site_data, user_data, pass_data,user,site, pswrd,id):
     con,cur = SQLcon()
     try:
         cur.execute(f"UPDATE List SET site='{site_data}',user='{user_data}',pass='{pass_data}' WHERE id={id};")
-        SQLclose([con,cur])
+        SQLclose(con)
         tkinter.messagebox.showinfo("UPDATED",'The database has been updated')
     except Exception as e:
         tkinter.messagebox.showerror("Error",e)
@@ -524,7 +524,7 @@ def NoticeCrtPas(site,username,password):
             con,cur = SQLcon()
             id=getID(cur)
             cur.execute(f"INSERT INTO list VALUES('{site_info}','{user_info}','{password}',{id})")
-            SQLclose([con,cur])
+            SQLclose(con)
             tkinter.messagebox.showinfo("Password created",f"Your password:{password} has been\nadded to the data base")
             
         except Exception as e:
