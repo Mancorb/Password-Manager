@@ -556,9 +556,9 @@ def RegisterStructure():
     site_entry = Entry(register_frame,textvariable=main_pass,bg=inputColor)#web site info
     site_entry.place(x=120,y=260, height=30, width=260)
 
-    create_password_button = Button(register_frame,text="Register password", width="10", height="1",
+    create_password_button = Button(register_frame,text="Enter", width="10", height="1",
                                     command=OpenSearchMenu,
-                                    bg=inputColor,font="Bebas_Neue 19 bold")
+                                    bg=inputColor,font=font_normal)
     create_password_button.place(x=165,y=360)
 
 #-------------------------------------------------------------
@@ -617,8 +617,8 @@ root.geometry("300x100")
 root.resizable(False, False)
 root.iconbitmap("logo_icono.ico")
 #esthetics Font
-font_title=("Bebas_Neue",15,"bold")
-font_normal=("Bebas_Neue",19)
+font_title=("Segoe UI",20,"bold")
+font_normal=("Segoe UI",15)
 #colors
 global background_color
 background_color='white'
