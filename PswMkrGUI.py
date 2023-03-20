@@ -3,7 +3,10 @@ import tkinter.messagebox
 from tkinter import ttk
 import sqlite3
 from random import randint
+from hashlib import md5
 
+global tempPass
+tempPass = ""
 #--------------------------------------------------------
 #methods
 #UNIVERSAL METHODS
@@ -49,6 +52,9 @@ def HideAllFrames():
     create_password_frame.pack_forget()
     register_frame.pack_forget()
     login_frame.pack_forget()
+
+def getHashVal(text):
+    return md5(bytes(text, 'utf-8')).hexdigest()
 
 #encript pasword
 #creates a conection with data base and returns conection and cursor.
@@ -553,13 +559,34 @@ def RegisterStructure():
     user_label=Label(register_frame,text="Password", fg=textColor, bg = background_color, font=font_normal)
     user_label.place(x=190,y=220)
 
-    site_entry = Entry(register_frame,textvariable=main_pass,bg=inputColor)#web site info
-    site_entry.place(x=120,y=260, height=30, width=260)
+    pass_entry = Entry(register_frame,textvariable=main_pass,bg=inputColor)#web site info
+    pass_entry.place(x=120,y=260, height=30, width=260)
 
     create_password_button = Button(register_frame,text="Enter", width="10", height="1",
-                                    command=OpenSearchMenu,
+                                    command=lambda: registerVerification(pass_entry),
                                     bg=inputColor,font=font_normal)
     create_password_button.place(x=165,y=360)
+
+def registerVerification(p):
+    """Check if the user has entered a valid passwrd, makes a hash, saves it in the database 
+    under the 'auth' table and saves in a local variable the values written
+
+    Args:
+        p (tkinter input): Master password input
+    """
+    masterP = p.get()
+    #verify if there was a valid input
+    if masterP != "":
+
+        con,cur = SQLcon() #create conection
+        try:#insert values into the system
+            cur.execute(f"INSERT INTO auth VALUES('{getHashVal(masterP)}')")
+
+        except Exception as e:
+            tkinter.messagebox.showerror("Error",e)
+        SQLclose(con)
+        tempPass = masterP
+        OpenSearchMenu()
 
 #-------------------------------------------------------------
 #LOGIN SCREEN
@@ -575,7 +602,7 @@ def LoginStructure():
     textColor= "#242424"
     inputColor= "#ffffff"
 
-    titulo=Label(login_frame,text="Register",bg = background_color,fg = textColor,font = font_title)#main title
+    titulo=Label(login_frame,text="Login",bg = background_color,fg = textColor,font = font_title)#main title
     titulo.place(x=180, y=70)
 
 
@@ -586,10 +613,33 @@ def LoginStructure():
     site_entry.place(x=120,y=260, height=30, width=260)
 
     create_password_button = Button(login_frame,text="Enter", width="10", height="1",
-                                    command=OpenSearchMenu,
+                                    command=lambda: verifyPass(site_entry),
                                     bg=inputColor,font="Bebas_Neue 19 bold")
     create_password_button.place(x=165,y=360)
-    
+
+def verifyPass(p):
+    inVal = p.get()
+    global tempPass
+
+    if inVal!="":
+        con,cur =SQLcon()
+        try:
+            cur.execute("SELECT ID FROM auth")
+            res = cur.fetchall()
+            res = res[0][0]
+        except Exception as e:
+            tkinter.messagebox.showerror("Error",e)
+        
+        SQLclose(con)
+
+        if res == getHashVal(inVal):
+            tempPass = inVal
+            OpenSearchMenu()
+        else:
+            tkinter.messagebox.showwarning("Error","Incorrect password")
+    else:
+        tkinter.messagebox.showinfo("Warning","Please fill out the input to continue...")
+
 #-------------------------------------------------------------
 #if no password is established open register menu, else open login menu
 def testForAuth():
@@ -610,6 +660,7 @@ def testForAuth():
         con.close()
         return False
     
+
 #root settings
 root=Tk()
 root.title("Password Manager")
@@ -623,6 +674,7 @@ font_normal=("Segoe UI",15)
 global background_color
 background_color='white'
 buttonColor="#1992b6"
+masterP = ""
 root ['bg']= background_color
 
 textColor= "#242424"
