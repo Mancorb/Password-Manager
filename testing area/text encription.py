@@ -1,21 +1,54 @@
-from simplecrypt import encrypt, decrypt
-from base64 import b64encode, b64decode
+import base64
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from hashlib import md5
+from cryptography.fernet import Fernet
 
+def keyCreator(pswd):
+    """Creates encription and decription key based on user input
 
-password = 'sekret'
-message = 'this is a secret message'
-ciphertext = encrypt(password, message)
+    Args:
+        pswd (String): user input of the password
+    """
+    password = pswd.encode()  # Convert to type bytes
+    salt = md5(bytes(pswd, 'utf-8')).hexdigest()
+    salt = salt.encode()
 
-encoded_cipher = b64encode(ciphertext)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    return base64.urlsafe_b64encode(kdf.derive(password))  # variable key will now have the value of a url safe base64 encoded key.
+    
+def encryptor(key,text):
+    f = Fernet(key)
+    return f.encrypt(text.encode())
+    
+def decryptor(key,target):
+    f = Fernet(key)
+    return f.decrypt(target).decode("utf-8") 
 
-print(encoded_cipher)
-print("\nEncripted...\n")
+key = keyCreator("pass")
 
-result = encoded_cipher
+testList = ["a","a","b","c"]
 
+for i in range(len(testList)):
+    testList[i]= encryptor(key,testList[i])
 
-result = b64decode(result)
-result = decrypt(password, result).decode("utf-8")
+print(testList)
 
+if testList[0] == testList[1]:
+    
+    print("same shit")
+else:
+    print("diferent shit")
 
-print (result)
+for i in range(len(testList)):
+    testList[i]= decryptor(key,testList[i])
+
+print(testList)
+
