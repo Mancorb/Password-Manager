@@ -1,12 +1,19 @@
 from tkinter import *
 import tkinter.messagebox
-from tkinter import ttk
+import base64
 import sqlite3
+from tkinter import ttk
 from random import randint
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from hashlib import md5
+from cryptography.fernet import Fernet
 
-global tempPass
-tempPass = ""
+
+global MASTER_KEY
+global background_color
+
 #--------------------------------------------------------
 #methods
 #UNIVERSAL METHODS
@@ -52,11 +59,64 @@ def HideAllFrames():
     create_password_frame.pack_forget()
     register_frame.pack_forget()
     login_frame.pack_forget()
-
+#obtain hash of String
 def getHashVal(text):
-    return md5(bytes(text, 'utf-8')).hexdigest()
+    """Returns hash value of a string
 
-#encript pasword
+    Args:
+        text (String): text to convert to hash
+
+    Returns:
+        String: string of hash object decrypted from byte form
+    """
+    return md5(bytes(text, 'utf-8')).hexdigest()
+#create an encription key
+def keyCreator(pswd):
+    """Creates encription and decription key based on user input
+
+    Args:
+        pswd (String): user input of the password
+    """
+    password = pswd.encode()  # Convert to type bytes
+    salt = getHashVal(pswd)
+    salt = salt.encode()
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    return base64.urlsafe_b64encode(kdf.derive(password))  # variable key will now have the value of a url safe base64 encoded key.
+#encript text with key
+def encryptor(key,text):
+    """Encrypts the input text with the key using cryptography Fernet
+
+    Args:
+        key (bytes): key to encript the text
+        text (String): Text to encript
+
+    Returns:
+        String: Encripted version of the text
+    """
+    f = Fernet(key)
+    return f.encrypt(text.encode()).decode("utf-8")
+#decript text with key 
+def decryptor(key,target):
+    """Decrypts the input text with the key using cryptography Fernet
+
+    Args:
+        key (bytes): key to encript the text
+        text (String): Text to Decript
+
+    Returns:
+        String: Decripted version of the text
+    """
+    f = Fernet(key)
+    return f.decrypt(target).decode("utf-8") 
+
+
 #creates a conection with data base and returns conection and cursor.
 def SQLcon():
     
@@ -64,7 +124,7 @@ def SQLcon():
     cur = con.cursor()
     data = [con,cur]
     return data
-
+#comitts changes and closes conection to SQL file
 def SQLclose(data):
     data.commit()
     data.close()
@@ -119,7 +179,7 @@ def AddMenuStructure():
     create_password_button.place(x=160,y=350)
 #Check if all the inputs are valid and gives notification
 def NoticeAddPas(user_info,site_info,pass_info,add_pass_entry,add_user_entry,add_site_entry):
-    """Adds a password to the database
+    """Checks if the user made correct input to add a new password
 
     Args:
         user_info (Tkinter input info): username input content
@@ -148,11 +208,12 @@ def CommitComfirm(site_data, user_data, pass_data):
         user_data (String): Username
         pass_data (String): Password
     """
+    password = encryptor(MASTER_KEY,pass_data)
     try:
         con,cur = SQLcon()
         id=getID(cur)
 
-        cur.execute(f"INSERT INTO list VALUES('{site_data}','{user_data}','{pass_data}',{id})")
+        cur.execute(f"INSERT INTO list VALUES('{site_data}','{user_data}','{password}',{id})")
         SQLclose(con)
         tkinter.messagebox.showinfo("Registry created",f"Data:\nSite: {site_data}\nUser: {user_data}\nPass: {pass_data}\nClick ok to continue")
     except Exception as e:
@@ -285,14 +346,13 @@ def isrtDataInTbl(infotable,command=None):
         command (_type_, optional): _description_. Defaults to None.
     """
     if command:
-        conexion = sqlite3.connect('testbd.db')
-        cur=conexion.cursor()
+        con,cur =SQLcon()
         #Run command
         cur.execute(command)
         rows = cur.fetchall()
         for dt in rows:
             infotable.insert('','end',iid=dt[3],values=(dt[3],dt[0],dt[1],dt[2]))
-        conexion.close()
+        SQLclose(con)
     else:
         infotable.insert("",'end',text="L1",
                         values=('',"NONE","NONE",
@@ -341,7 +401,7 @@ def copyRow(sel):
         con,cur = SQLcon()
         cur.execute(f'SELECT pass FROM List WHERE id = {sel[0]}')
         pswrd=cur.fetchone()
-        pswrd=str(pswrd[0])
+        pswrd=decryptor(MASTER_KEY,str(pswrd[0]))
         total=''
         for i in pswrd:
             if i!='(' and i!=')' and i != ',' and i != ' ' and i != '[' and i != ']':
@@ -522,9 +582,11 @@ def process(lowerLetters,UpperLetters,symbols):
         final+=temp
     return final#returns the final string (the generated password)
 #password created notification
-def NoticeCrtPas(site,username,password):
+def NoticeCrtPas(site,username,pswd):
     user_info=username.get()
     site_info=site.get()
+
+    password = encryptor(MASTER_KEY,pswd)
 
     if site_info!="" or user_info!="":
         try:
@@ -532,7 +594,7 @@ def NoticeCrtPas(site,username,password):
             id=getID(cur)
             cur.execute(f"INSERT INTO list VALUES('{site_info}','{user_info}','{password}',{id})")
             SQLclose(con)
-            tkinter.messagebox.showinfo("Password created",f"Your password:{password} has been\nadded to the data base")
+            tkinter.messagebox.showinfo("Password created",f"Your password: has been\nadded to the data base")
             
         except Exception as e:
             tkinter.messagebox.showerror("Error",e)
@@ -584,8 +646,11 @@ def registerVerification(p):
 
         except Exception as e:
             tkinter.messagebox.showerror("Error",e)
+
         SQLclose(con)
-        tempPass = masterP
+        global MASTER_KEY
+        MASTER_KEY = keyCreator(masterP)
+
         OpenSearchMenu()
 
 #-------------------------------------------------------------
@@ -619,7 +684,7 @@ def LoginStructure():
 
 def verifyPass(p):
     inVal = p.get()
-    global tempPass
+
 
     if inVal!="":
         con,cur =SQLcon()
@@ -633,7 +698,8 @@ def verifyPass(p):
         SQLclose(con)
 
         if res == getHashVal(inVal):
-            tempPass = inVal
+            global MASTER_KEY
+            MASTER_KEY = keyCreator(inVal)
             OpenSearchMenu()
         else:
             tkinter.messagebox.showwarning("Error","Incorrect password")
@@ -671,7 +737,6 @@ root.iconbitmap("logo_icono.ico")
 font_title=("Segoe UI",20,"bold")
 font_normal=("Segoe UI",15)
 #colors
-global background_color
 background_color='white'
 buttonColor="#1992b6"
 masterP = ""
