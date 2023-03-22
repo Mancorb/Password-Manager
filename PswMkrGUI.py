@@ -447,7 +447,7 @@ def ModifyMenuStructure(user,site,pswrd,id):
     InUser=StringVar()
     InUser.set(user)
     InPwrd=StringVar()
-    InPwrd.set(pswrd)
+    InPwrd.set(decryptor(MASTER_KEY,pswrd))
     #inputs to modify info
     OGsite=Label(modify_data_frame,text='Site:',bg = backcol,fg = "black",font= f'Bebas_Neue {size} bold')
     OGsite.place(x=20,y=90)
@@ -480,12 +480,12 @@ def NoticeModification(site_data, user_data, pass_data,user,site, pswrd,id):
         user_data=user
         warn=True
     if not pass_data:
-        pass_data=pswrd
+        pass_data=decryptor(MASTER_KEY,pswrd)
         warn=True
     if warn: tkinter.messagebox.showwarning("Warning","The original information will be used to replace th empty input")
     con,cur = SQLcon()
     try:
-        cur.execute(f"UPDATE List SET site='{site_data}',user='{user_data}',pass='{pass_data}' WHERE id={id};")
+        cur.execute(f"UPDATE List SET site='{site_data}',user='{user_data}',pass='{encryptor(MASTER_KEY,pass_data)}' WHERE id={id};")
         SQLclose(con)
         tkinter.messagebox.showinfo("UPDATED",'The database has been updated')
     except Exception as e:
