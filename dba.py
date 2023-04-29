@@ -47,7 +47,8 @@ def search(command):
 
         rows = cur.fetchall()
         #window(rows)
-        print(rows)
+        for r in rows:
+            print(r[0],",")
 
     except Exception as e:
         print(f"--ERROR:{e}")
@@ -62,6 +63,11 @@ def execute(command):
         disconnect(conexion)
     except Exception as e:
         print(f"--Error:{e}")
+def description ():
+    try:
+        search("SELECT tbl_name FROM SQLITE_SCHEMA")
+    except Exception as e:
+        print(f"--Error:{e}")
 def connect():
     #Conexión
     conexion = sqlite3.connect('testbd.db')
@@ -71,11 +77,14 @@ def disconnect(conexion):
     conexion.close()
 
 if __name__ == '__main__':
+    print("Tables available:")
+    description()
+    
     while True:
         com=input("[]->")
 
         if com=='help':
-            print("\n'search'=seach data in database\n'run'=run command\ncreate=Create table\n'q'=quit\nTable name is 'lista'")
+            print("\n'search'=seach data in database\n'run'=run command\ncreate=Create table\n'q'=quit")
         
         elif com=='search':
             com=input("[S]->")
