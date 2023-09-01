@@ -249,7 +249,7 @@ def OpenSearchMenuStructure():
     currentvar=StringVar()
 
     #List of options
-    options=['Site','User','Pass']
+    options=['Site','User']
 
     #user inputs
     searcher = Entry(search_password_frame,textvariable=query,
@@ -258,7 +258,7 @@ def OpenSearchMenuStructure():
     searcher.place(x=10,y=70, height=30, width=300)
 
     #Dropbox
-    filterinfo=OptionMenu(search_password_frame ,currentvar,options[0],options[1],options[2])
+    filterinfo=OptionMenu(search_password_frame ,currentvar,options[0],options[1])
     
     #Set the current option
     currentvar.set(options[0])
@@ -288,15 +288,13 @@ def OpenSearchMenuStructure():
     editB.place(x=300,y=440,width=90)
 
     #table
-    infotable=ttk.Treeview(search_password_frame, columns=(1,2,3,4), show="headings", height=5)
+    infotable=ttk.Treeview(search_password_frame, columns=(1,2,3), show="headings", height=5)
     infotable.column(1,width=30, anchor="c")
-    infotable.column(2,width=110, anchor="c")
-    infotable.column(3,width=130, anchor="c")
-    infotable.column(4,width=210, anchor="c")
+    infotable.column(2,width=210, anchor="c")
+    infotable.column(3,width=230, anchor="c")
     infotable.heading(1,text="ID")
     infotable.heading(2,text="Web Site")
     infotable.heading(3,text="User name / email")
-    infotable.heading(4,text="Password")
     infotable.place(x=10, y=120, height=300)
 
     sub=Label(search_password_frame,text="Options",bg = backcol,fg = "black",font = font_normal)
@@ -351,7 +349,7 @@ def isrtDataInTbl(infotable,command=None):
         cur.execute(command)
         rows = cur.fetchall()
         for dt in rows:
-            infotable.insert('','end',iid=dt[3],values=(dt[3],dt[0],dt[1],dt[2]))
+            infotable.insert('','end',iid=dt[3],values=(dt[3],dt[0],dt[1]))
         SQLclose(con)
     else:
         infotable.insert("",'end',text="L1",
