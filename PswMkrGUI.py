@@ -672,7 +672,7 @@ def LoginStructure():
     user_label=Label(login_frame,text="Password", fg=textColor, bg = background_color, font=font_normal)
     user_label.place(x=190,y=220)
 
-    site_entry = Entry(login_frame,textvariable=main_pass,bg=inputColor)#web site info
+    site_entry = Entry(login_frame,textvariable=main_pass,bg=inputColor,show="#")#web site info
     site_entry.place(x=120,y=260, height=30, width=260)
 
     create_password_button = Button(login_frame,text="Enter", width="10", height="1",
