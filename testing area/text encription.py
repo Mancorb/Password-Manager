@@ -1,66 +1,67 @@
-import base64
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from hashlib import md5
-from cryptography.fernet import Fernet
-def getHashVal(text):
-    """Returns hash value of a string
+#steps
+#formula C = K * P
+# C = cypher
+# K = matrix of data from the image info (RGB matrix)
+# P = original text to encrypt in ascci format
+import numpy as np
+from random import randint
+
+def encrypt(word):
+    res = ""
+    while len(res) < len(word):
+        C = _obtainC(word)
+        for i in C:
+            res = res + chr(i) 
+
+    return str(res)
+
+
+def _obtainC (word):
+    P = _obtainP(word)
+    K = _obtainK(len(P))
+    C = np.array(np.matmul(K,P))
+    for i in range (len(C)):
+        C[i]= (C[i]% 122)
+
+    return C
+
+
+def _obtainK(n):
+    """Generate the K matrix, the number of cols must be equal to n which is the number of letters in P."
 
     Args:
-        text (String): text to convert to hash
+        n (int): number of cols to generate
+    
+    Returns:
+        K matrix.
+    """
+    K = []
+    nums = np.random.randint(0,255,(2000, n))
+    for i in range(n):
+        temp = nums[randint(0,len(nums))]
+        temp = temp.tolist()
+        K.append(temp)
+    
+    return np.array(K)
+
+
+def _obtainP(word):
+    """Convert a word into ASCII value
+
+    Args:
+        word (string): Word to convert
 
     Returns:
-        String: string of hash object decrypted from byte form
+        list: Converted values.
     """
-    return md5(bytes(text, 'utf-8')).hexdigest()
-
-def keyCreator(pswd):
-    """Creates encription and decription key based on user input
-
-    Args:
-        pswd (String): user input of the password
-    """
-    password = pswd.encode()  # Convert to type bytes
-    salt = getHashVal(pswd)
-    salt = salt.encode()
-
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    return base64.urlsafe_b64encode(kdf.derive(password))  # variable key will now have the value of a url safe base64 encoded key.
-    
-def encryptor(key,text):
-    f = Fernet(key)
-    return f.encrypt(text.encode())
-    
-def decryptor(key,target):
-    f = Fernet(key)
-    return f.decrypt(target).decode("utf-8") 
-
-key = keyCreator("pass")
+    word = [word]
+    P = [ord(ele) for sub in word for ele in sub]
+    return P
 
 
-testList = ["a","a","b","c"]
+results = []
+for i in range(20):
+    results.append(encrypt("password"))
 
-for i in range(len(testList)):
-    testList[i]= encryptor(key,testList[i])
-
-print(testList)
-print(type(testList[0]))
-
-if testList[0] == testList[1]:
-    
-    print("same shit")
-else:
-    print("diferent shit")
-
-for i in range(len(testList)):
-    testList[i]= decryptor(key,testList[i])
-
-print(testList)
-
+print(results)
+print("\n")
