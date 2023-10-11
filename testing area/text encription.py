@@ -5,6 +5,7 @@
 # P = original text to encrypt in ascci format
 import numpy as np
 from random import randint
+options = list("1234567890-=!@#$%^&*()_+qwertyuiop[]asdfghjkl;zxcvbnm,./QWERTYUIOP{|}ASDFGHJKL:ZXCVBNM<>?`~")
 
 def encrypt(word):
     """Encrypts a word with matrix multiplication
@@ -17,14 +18,14 @@ def encrypt(word):
     """
     res = ""
     while len(res) < len(word):
-        C = _obtainC(word)
+        C = _obtainC(word,len(options))
         for i in C:
-            res = res + chr(i) 
+            res +=options[i] 
 
     return str(res)
 
 
-def _obtainC (word):
+def _obtainC (word, n):
     """Returns the encrypted result of a word's character
     Args:
         word (String): letter to encrypt
@@ -33,29 +34,40 @@ def _obtainC (word):
 
     """
     P = _obtainP(word)
-    K = _obtainK(len(P))
+    K = _obtainK(P)
     C = np.array(np.matmul(K,P))
     for i in range (len(C)):
-        C[i]= (C[i]% 122)
+        C[i]= (C[i]% n)
 
     return C
 
 
-def _obtainK(n):
+def _obtainK(P):
     """Generate the K matrix, the number of cols must be equal to n which is the number of letters in P."
 
     Args:
-        n (int): number of cols to generate
+        P (string): string value of P
     
     Returns:
         K matrix.
     """
-    K = []
-    nums = np.random.randint(0,255,(n, n))
-    for i in range(n):
-        temp = nums[randint(0,len(nums))]
-        temp = temp.tolist()
+    n = len(P)
+    K = [] #store the matrix
+    temp = [] # row of matrix
+    switch= False
+
+    counter = 2
+    for row in range(n):
+        for column in range(n):
+            temp.append(int((P[row]/counter)*100))
+
+            if switch:
+                counter -= 1.5
+            else:
+                counter += 1.5
         K.append(temp)
+        temp = []
+        switch = not switch
     
     return np.array(K)
 
@@ -75,8 +87,25 @@ def _obtainP(word):
 
 
 results = []
-for i in range(20):
-    results.append(encrypt("password"))
+wordlist = []
 
-print(results)
-print("\n")
+with open("wordList.txt","r") as file :
+    for word in file:
+        wordlist.append(word[:-1])
+
+for i in wordlist:
+    results.append(encrypt(i))
+
+""" for i in range(len(results)):
+    print(wordlist[i]+" -> "+ results[i]+"\n") """
+
+
+uniques = []
+
+for word in results:
+    if word not in uniques:
+        uniques.append(word)
+
+print("Example of encryption:"+ wordlist[0]+ " => "+ results[0])
+print("original word list length:"+str(len(wordlist)))
+print("number of unique encryptions:"+str(len(results)))
