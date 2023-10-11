@@ -1,12 +1,20 @@
 #steps
 #formula C = K * P
 # C = cypher
-# K = matrix of data from the image info (RGB matrix)
+# K = matrix of data from the length of P 
 # P = original text to encrypt in ascci format
 import numpy as np
 from random import randint
 
 def encrypt(word):
+    """Encrypts a word with matrix multiplication
+
+    Args:
+        word (string): word to encrypt
+
+    Returns:
+        string: encryoted result
+    """
     res = ""
     while len(res) < len(word):
         C = _obtainC(word)
@@ -17,6 +25,13 @@ def encrypt(word):
 
 
 def _obtainC (word):
+    """Returns the encrypted result of a word's character
+    Args:
+        word (String): letter to encrypt
+    Return:
+        string: encrypted letter
+
+    """
     P = _obtainP(word)
     K = _obtainK(len(P))
     C = np.array(np.matmul(K,P))
@@ -36,7 +51,7 @@ def _obtainK(n):
         K matrix.
     """
     K = []
-    nums = np.random.randint(0,255,(2000, n))
+    nums = np.random.randint(0,255,(n, n))
     for i in range(n):
         temp = nums[randint(0,len(nums))]
         temp = temp.tolist()
