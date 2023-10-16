@@ -89,18 +89,22 @@ def _obtainP(word):
 results = []
 wordlist = []
 
-with open("wordList.txt","r") as file :
+
+while True:
+    print(encrypt(input("Palabra a encriptar: ")))
+
+""" with open("wordList.txt","r") as file :
     for word in file:
         wordlist.append(word[:-1])
 
 for i in wordlist:
-    results.append(encrypt(i))
+    results.append(encrypt(i)) """
 
 """ for i in range(len(results)):
     print(wordlist[i]+" -> "+ results[i]+"\n") """
 
 
-uniques = []
+""" uniques = []
 
 for word in results:
     if word not in uniques:
@@ -109,3 +113,4 @@ for word in results:
 print("Example of encryption:"+ wordlist[0]+ " => "+ results[0])
 print("original word list length:"+str(len(wordlist)))
 print("number of unique encryptions:"+str(len(results)))
+ """
