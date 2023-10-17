@@ -190,11 +190,11 @@ def decryptor(key,target):
     f = Fernet(key)
     return f.decrypt(target).decode("utf-8") 
 
-
+#SQL CONNECTION METHODS
 #creates a conection with data base and returns conection and cursor.
 def SQLcon():
     
-    con = sqlite3.connect("testbd.db")
+    con = sqlite3.connect("Repository.db")
     cur = con.cursor()
     data = [con,cur]
     return data

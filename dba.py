@@ -70,7 +70,7 @@ def description ():
         print(f"--Error:{e}")
 def connect():
     #Conexión
-    conexion = sqlite3.connect('testbd.db')
+    conexion = sqlite3.connect('Repository.db')
     return conexion
 
 def disconnect(conexion):
