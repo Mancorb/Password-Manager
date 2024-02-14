@@ -184,11 +184,11 @@ class Login_Register_Frame(ctk.CTkToplevel):
         super().__init__(*args,**kwargs)
         self.encryption_obj = Encription_Factory()
 
-        self.geometry("420x570")
+        self.geometry("420x600")
         self.grab_set()#Method to for the user to use this page and inactivate the other page
 
         #setup the variables
-        self.title_font = ctk.CTkFont(family="@Adobe Gothic Std B",size= 45)
+        self.title_font = ctk.CTkFont(family="@Adobe Gothic Std B",size= 45, weight= "bold")
         self.text_font = ctk.CTkFont(family="Arial Rounded MT Bold", size = 12)
         self.button_font = ctk.CTkFont(family="Arial Rounded MT Bold", size = 20)
         self.disclaimer_font = ctk.CTkFont(family="Segoe UI Variable Display Semib", size = 13)
@@ -243,6 +243,8 @@ class Login_Register_Frame(ctk.CTkToplevel):
         check_var = ctk.StringVar(value = "on")
 
         def checkbox_event():
+            """Checks the state of the checkbox, if it is 'on' then hide the input text, else show the input text
+            """
             state = check_var.get()
             if state == "on":
                 self.password_input.configure(show = "*")
@@ -275,22 +277,56 @@ class Login_Register_Frame(ctk.CTkToplevel):
                                    variable=check_var,
                                    command=lambda: checkbox_event(),
                                    onvalue="on",
-                                   offvalue="off")
+                                   offvalue="off",
+                                   checkmark_color="orange",
+                                   fg_color="grey",hover_color="white"
+                                   )
         
-        login_Button = ctk.CTkButton(master = loginFrame,
+        login_Button = ctk.CTkButton(master = self,
                                      text="Login",
                                      text_color="white",
                                      fg_color="#fa820b", 
                                      font = self.button_font,
                                      hover_color = "#c56200",
-                                     command=lambda: self.check_credencials())
+                                     command=lambda: self.login_procedure(),
+                                     width = 120,
+                                     height = 45)
         
         username_Label.place(relx = 0.1, rely = 0.2,anchor=NW)
-        self.password_input.pack()
-        checkbox.pack(side= "right")
-        login_Button.pack(side = "bottom",pady = 20)
-        loginFrame.pack(anchor = CENTER,expand = True, pady=20)
+        self.password_input.pack(pady=20, padx = 20)
+        checkbox.pack(side= "right", padx = 15)
         
+        loginFrame.pack(anchor = CENTER,expand = True, pady=200)
+        login_Button.place(anchor = S,relx = 0.5, rely = 0.8)
+
+    def login_procedure(self):
+        
+        password = self.password_input.get()
+
+        if not password:
+            CTkMessagebox(title="Error Missing Input", message="Please fill in the inputs", icon="cancel")
+            self.password_input.configure({"border_color": "red"})
+
+            return
+        
+        #Encrypt the password and check if it is the same as the one saved
+        self.encryption_obj.text = password
+        encrypted_pass = self.encryption_obj.getHashVal(self.encryption_obj.encryptMain())
+
+        sql_com = "SELECT 'code' FROM Authentification" 
+
+        saved_pass = self.execute(command = sql_com, result= True)[0][0]
+
+        if saved_pass != encrypted_pass:
+            hint_text = "Hint: " + self.execute(command="SELECT 'Hint' FROM Authentification",show = True)[0][0]
+
+            if len(hint_text)<1:
+                hint_text = "Please try again"
+
+            CTkMessagebox(title="Wrong password", message=hint_text, icon = "info")
+
+            
+            
 
     def runRegistration(self):
         
@@ -301,7 +337,7 @@ class Login_Register_Frame(ctk.CTkToplevel):
         self.titleLabel.place(relx = 0.1, rely = 0.05,anchor = NW)
 
         self.disclaimerLabel = ctk.CTkLabel(master = registerFrame,
-                                            text="Disclaimer: The password you use cannot be currently recovered. Thus we suggest a STRONG PASSWORD TO REMEMBER. A future version of this program may include a 'recover password feature'.",
+                                            text="Disclaimer: The password you use cannot be currently recovered. Thus we suggest a STRONG PASSWORD TO REMEMBER.\nA future version of this program may include a 'recover password feature'.",
                                             font= self.disclaimer_font,
                                             text_color="grey",
                                             wraplength=390
@@ -331,13 +367,24 @@ class Login_Register_Frame(ctk.CTkToplevel):
                                             font = self.text_font
                                             )
 
+        self.hint_input = ctk.CTkEntry(master = registerFrame,
+                                  bg_color="transparent",
+                                  text_color="#ebd3b7",
+                                  placeholder_text="Password hint",
+                                  placeholder_text_color="#9c8d7c",
+                                  border_width=1,
+                                  border_color="#ebd3b7",
+                                  fg_color=self.background_color,
+                                  width = registerFrame.winfo_screenmmwidth(),
+                                  font = self.text_font)
+
         self.Register_Button = ctk.CTkButton(master = registerFrame,
                                             text="Register",
                                             text_color="white",
                                             fg_color="#fa820b", 
                                             font = self.button_font,
                                             hover_color = "#c56200",
-                                            command=lambda: self.procedure()
+                                            command=lambda: self.register_Procedure()
                                             )
         
         #pad x and y
@@ -347,34 +394,47 @@ class Login_Register_Frame(ctk.CTkToplevel):
         i_x = 2
         i_y = 2
         #ipad x and y if button
-        b_x = 1
-        b_y = 5
+        b_y = 10
         ctk.CTkLabel(master = registerFrame, text = "").pack(pady = y*2)
         self.username_input.pack(side = "top", ipadx = i_x, ipady = i_y, padx = x, pady = y)
 
         self.password_input.pack(side = "top", ipadx = i_x, ipady = i_y, padx = x, pady = y)
+
+        self.hint_input.pack(side = "top", ipadx = i_x, ipady = i_y, padx = x, pady = y)
+
         self.disclaimerLabel.pack(side = "top",padx=0, pady =0)
 
-        self.Register_Button.pack(side = "top", ipadx = b_x, ipady = b_y, padx = x, pady = y+20)
+
+        self.Register_Button.pack(side = "top", padx = x, pady = y, ipady = b_y)
 
         registerFrame.pack(anchor =CENTER, expand = True, pady=60)
     
-    def procedure(self):
+    def register_Procedure(self):
 
-        def verifyInput(username, password):
+        def verifyInput(username, password, hint):
+
             if not username or not password: 
-                CTkMessagebox(title="Error Missing Input", message="Please fill in all the inputs", icon="cancel")
+                CTkMessagebox(title="Error: Missing Input", message="Please fill in all the inputs", icon="cancel")
                 #Mark the entries as red if they are missing and make them orange again if they have an input
                 if not username:
-                    self.username_input.configure({"border_color": "red"})
+                    self.username_input.configure(border_color= "red")
                 else:
-                    self.username_input.configure({"border_color": "orange"})
+                    self.username_input.configure(border_color= "orange")
 
                 if not password:
-                    self.password_input.configure({"border_color": "red"})
+                    self.password_input.configure(border_color = "red")
                 else:
-                    self.password_input.configure({"border_color": "orange"})
+                    self.password_input.configure(border_color = "orange")
 
+                return False
+
+            if len(hint) > 149:
+                CTkMessagebox(title="Error: Scace exeded", message="The hint has to be less than 150 characters long", icon="info")
+
+                return False
+            
+            elif hint == password:
+                CTkMessagebox(title="Error", message="The HINT can't be the SAME as the PASSWORD.", icon="info")
                 return False
 
             return True
@@ -382,9 +442,10 @@ class Login_Register_Frame(ctk.CTkToplevel):
         # get the imputs
         username = self.username_input.get()
         password = self.password_input.get()
+        hint = self.hint_input.get()
 
-        if verifyInput(username,password):
-            self.register_in_DB(username,password)
+        if verifyInput(username,password,hint):
+            self.register_in_DB(username,password,hint)
             self.restore()
 
     def restore(self):
@@ -393,11 +454,14 @@ class Login_Register_Frame(ctk.CTkToplevel):
         self.grab_release()
         self.destroy()
 
-    def register_in_DB(self, user, password):
+    def register_in_DB(self, user, password, hint):
+
+        if hint == None:
+            hint = ""
 
         self.encryption_obj.text = password
 
-        command = f"INSERT INTO Authentification VALUES('{user}','{self.encryption_obj.getHashVal(self.encryption_obj.encryptMain())}')"
+        command = f"INSERT INTO Authentification VALUES('{user}','{self.encryption_obj.getHashVal(self.encryption_obj.encryptMain())}', '{hint}')"
         self.execute(command)
         
 
