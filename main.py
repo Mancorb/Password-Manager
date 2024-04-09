@@ -12,10 +12,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 class Encription_Factory():
-    def __init__(self):
-        self.word = ""
 
-    def encryptMain(self):
+    def encryptMain(self, word):
         """Encrypts a word with matrix multiplication
 
         Args:
@@ -26,35 +24,38 @@ class Encription_Factory():
         """
         options = list("1234567890-=!@#$%^&*()_+qwertyuiop[]asdfghjkl;zxcvbnm,./QWERTYUIOP{|}ASDFGHJKL:ZXCVBNM<>?`~")
         res = ""
-        while len(res) < len(self.word):
-            C = self._obtainC(self.word,len(options))
+        while len(res) < len(word):
+            C = self._obtainC(word,len(options))
             for i in C:
                 res +=options[i] 
 
         return str(res)
-    def _obtainC (self,n):
-        """Returns the encrypted result of a word's character
-        Args:
-            word (String): letter to encrypt
-        Return:
-            string: encrypted letter
 
+
+    def _obtainC (self,word,n):
+        """Returns the encrypted result of a word's character
+            Args:
+                word (String): letter to encrypt
+            Return:
+                string: encrypted letter
         """
+        P = self._obtainP(word)
         K = self._obtainK(P)
-        P = self._obtainP(self.word)
         C = np.array(np.matmul(K,P))
         for i in range (len(C)):
             C[i]= (C[i]% n)
 
         return C
+
+
     def _obtainK(self,P):
         """Generate the K matrix, the number of cols must be equal to n which is the number of letters in P."
 
-        Args:
-            P (string): string value of P
+            Args:
+                P (string): string value of P
 
-        Returns:
-            K matrix.
+            Returns:
+                K matrix.
         """
         n = len(P)
         K = [] #store the matrix
@@ -75,7 +76,9 @@ class Encription_Factory():
             switch = not switch
 
         return np.array(K)
-    def _obtainP(self):
+
+        
+    def _obtainP(self,word):
         """Convert a word into ASCII value
 
         Args:
@@ -84,9 +87,9 @@ class Encription_Factory():
         Returns:
             list: Converted values.
         """
-        word = [self.word]
         P = [ord(ele) for sub in word for ele in sub]
         return P
+
 
     def getHashVal(self,text):
         """Returns hash value of a string
@@ -150,6 +153,7 @@ class Encription_Factory():
 
     #The frame where all the content of the program will be placed
 
+
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -180,8 +184,8 @@ class Login_Register_Frame(ctk.CTkToplevel):
     # Current phase: Create Account Logic
 
 
-    def __init__(self,*args, **kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.encryption_obj = Encription_Factory()
 
         self.geometry("420x600")
@@ -194,6 +198,8 @@ class Login_Register_Frame(ctk.CTkToplevel):
         self.disclaimer_font = ctk.CTkFont(family="Segoe UI Variable Display Semib", size = 13)
         self.username = ""
         self.background_color= '#242525'
+        self.state = False #boolean to confirm registration or Login is successfull
+
 
         self.registerVerification()
 
@@ -245,8 +251,7 @@ class Login_Register_Frame(ctk.CTkToplevel):
         def checkbox_event():
             """Checks the state of the checkbox, if it is 'on' then hide the input text, else show the input text
             """
-            state = check_var.get()
-            if state == "on":
+            if check_var.get() == "on":
                 self.password_input.configure(show = "*")
             else:
                 self.password_input.configure(show = "")
@@ -310,23 +315,30 @@ class Login_Register_Frame(ctk.CTkToplevel):
             return
         
         #Encrypt the password and check if it is the same as the one saved
-        self.encryption_obj.text = password
-        encrypted_pass = self.encryption_obj.getHashVal(self.encryption_obj.encryptMain())
+        encrypted_pass = self.encryption_obj.getHashVal(self.encryption_obj.encryptMain(password))
 
-        sql_com = "SELECT 'code' FROM Authentification" 
+        sql_com = "SELECT code FROM Authentification" 
 
         saved_pass = self.execute(command = sql_com, result= True)[0][0]
 
-        if saved_pass != encrypted_pass:
-            hint_text = "Hint: " + self.execute(command="SELECT 'Hint' FROM Authentification",show = True)[0][0]
+        # Check if its the same password as the one stored internally
 
-            if len(hint_text)<1:
+        if saved_pass != encrypted_pass:
+            hint_text = "Hint: " + self.execute("SELECT Hint FROM Authentification",True)[0][0]
+
+            if len(hint_text)<7:
                 hint_text = "Please try again"
 
             CTkMessagebox(title="Wrong password", message=hint_text, icon = "info")
 
-            
-            
+            return
+        
+        else:
+            master_password = password
+            self.restore()
+        
+
+        
 
     def runRegistration(self):
         
@@ -454,17 +466,15 @@ class Login_Register_Frame(ctk.CTkToplevel):
         self.grab_release()
         self.destroy()
 
+
     def register_in_DB(self, user, password, hint):
 
         if hint == None:
             hint = ""
 
-        self.encryption_obj.text = password
-
-        command = f"INSERT INTO Authentification VALUES('{user}','{self.encryption_obj.getHashVal(self.encryption_obj.encryptMain())}', '{hint}')"
+        command = f"INSERT INTO Authentification VALUES('{user}','{self.encryption_obj.getHashVal(self.encryption_obj.encryptMain(password))}', '{hint}')"
         self.execute(command)
         
-
 
 
 class App(ctk.CTk):
@@ -472,6 +482,7 @@ class App(ctk.CTk):
         super().__init__()
         self.grid_rowconfigure(0,weight=1)
         self.grid_columnconfigure(0,weight=1)
+
 
         ctk.set_appearance_mode("dark")
 
@@ -492,6 +503,7 @@ class App(ctk.CTk):
             self.toplevel_window.focus()  # if window exists focus it
 
 
-
-app = App()
-app.mainloop()
+if __name__ == "__main__":
+    master_password=1
+    app = App()
+    app.mainloop()
