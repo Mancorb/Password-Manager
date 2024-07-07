@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
+
 class Encription_Factory():
 
     def encryptMain(self, word):
@@ -175,14 +176,25 @@ class MainFrame(ctk.CTkFrame):
         self.register_Tab = self.TabSection.add("Add new")
 
         #content of the search tab
+        search_background_color = '#242525'
+        """
+        Order: 
+        Title
+        Search bar  | Search button | usr/site
+        Results Table
+        |Website  Username  Edit icon  copy icon|
+        """
+        #Title text:
+        search_frame = Frame(self.search_Tab,background=search_background_color)
+
+        search_title_Label = ctk.CTkLabel(self.search_Tab,text="Search Passwords", justify= "left")
+        search_title_Label.place(relx = 0.1, rely = 0.05,anchor = NW)
         
 
 
 class Login_Register_Frame(ctk.CTkToplevel):
 
-    #TODO: add a way to close all the app if this page is closed by the user without loggin in
-    # Current phase: Create Account Logic
-
+    # root is "self"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -199,22 +211,25 @@ class Login_Register_Frame(ctk.CTkToplevel):
         self.username = ""
         self.background_color= '#242525'
         self.state = False #boolean to confirm registration or Login is successfull
+        self.password = None
 
+        self.protocol("WM_DELETE_WINDOW",self.close_procedure)
 
         self.registerVerification()
 
 
     def registerVerification(self):
-        """Verify if there is already a registered user in the sistem
+        """Verify if there is already a registered user in the system
         """
         command= "SELECT COUNT(username) FROM Authentification;"
         number_rows = self.execute(command,True)[0][0]
 
         if number_rows==0:
-            self.runRegistration()
+            self.RunRegistration_Front()
 
         else:
-            self.runLogin()
+            self.RunLogin_Front()
+
 
     def execute(self,command, result = False):
         """Run SQL command in the database
@@ -241,12 +256,14 @@ class Login_Register_Frame(ctk.CTkToplevel):
         if result:
             return results
 
-    def runLogin(self):
+
+    def RunLogin_Front(self):
         loginFrame = Frame(self,background =self.background_color)
 
         username = self.execute("SELECT username FROM Authentification;", True)[0][0]
 
         check_var = ctk.StringVar(value = "on")
+
 
         def checkbox_event():
             """Checks the state of the checkbox, if it is 'on' then hide the input text, else show the input text
@@ -304,18 +321,19 @@ class Login_Register_Frame(ctk.CTkToplevel):
         loginFrame.pack(anchor = CENTER,expand = True, pady=200)
         login_Button.place(anchor = S,relx = 0.5, rely = 0.8)
 
+
     def login_procedure(self):
         
-        password = self.password_input.get()
+        self.password = self.password_input.get()
 
-        if not password:
+        if not self.password:
             CTkMessagebox(title="Error Missing Input", message="Please fill in the inputs", icon="cancel")
             self.password_input.configure({"border_color": "red"})
 
             return
         
         #Encrypt the password and check if it is the same as the one saved
-        encrypted_pass = self.encryption_obj.getHashVal(self.encryption_obj.encryptMain(password))
+        encrypted_pass = self.encryption_obj.getHashVal(self.encryption_obj.encryptMain(self.password))
 
         sql_com = "SELECT code FROM Authentification" 
 
@@ -334,13 +352,10 @@ class Login_Register_Frame(ctk.CTkToplevel):
             return
         
         else:
-            master_password = password
             self.restore()
         
 
-        
-
-    def runRegistration(self):
+    def RunRegistration_Front(self):
         
         registerFrame = Frame(self,background =self.background_color)
 
@@ -421,6 +436,7 @@ class Login_Register_Frame(ctk.CTkToplevel):
 
         registerFrame.pack(anchor =CENTER, expand = True, pady=60)
     
+
     def register_Procedure(self):
 
         def verifyInput(username, password, hint):
@@ -451,19 +467,23 @@ class Login_Register_Frame(ctk.CTkToplevel):
 
             return True
 
-        # get the imputs
+        # get the inputs
         username = self.username_input.get()
-        password = self.password_input.get()
+        self.password = self.password_input.get()
         hint = self.hint_input.get()
 
-        if verifyInput(username,password,hint):
-            self.register_in_DB(username,password,hint)
+        if verifyInput(username,self.password,hint):
+            self.register_in_DB(username,self.password,hint)
             self.restore()
+
 
     def restore(self):
         """Gives control back to the main page of the program
         """
         self.grab_release()
+        #save input in the global variable
+        master_password = self.password
+
         self.destroy()
 
 
@@ -474,7 +494,9 @@ class Login_Register_Frame(ctk.CTkToplevel):
 
         command = f"INSERT INTO Authentification VALUES('{user}','{self.encryption_obj.getHashVal(self.encryption_obj.encryptMain(password))}', '{hint}')"
         self.execute(command)
-        
+
+    def close_procedure(self):
+        exit()
 
 
 class App(ctk.CTk):
@@ -502,8 +524,24 @@ class App(ctk.CTk):
         else:
             self.toplevel_window.focus()  # if window exists focus it
 
+    
+
 
 if __name__ == "__main__":
-    master_password=1
+    #global password variable
+    master_password=None
     app = App()
     app.mainloop()
+
+"""
+Notes:
+
+Create a global password variable wich will be filled as soon as teh user puts in a correct login or registration
+If the variable is still empty after closing the login or registration pages then close the entire app.
+
+It is necesary to manipulate the exit funtion of tkinter
+function logig:
+obtain master password
+if not masterpassword:
+    clse the program using os (lookup the backdoor program in gitub)
+"""
