@@ -159,7 +159,6 @@ class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.encryption_obj = Encription_Factory()
-
         custom_font = ctk.CTkFont()
         
 
@@ -169,8 +168,9 @@ class MainFrame(ctk.CTkFrame):
                                          segmented_button_fg_color="#242732")
         
         self.TabSection.pack(fill = "both", expand = 1) # make it fill the screen
-        self.TabSection._segmented_button.configure(text_color="white", fg_color = "grey", font = custom_font)
+        
 
+        self.TabSection._segmented_button.configure(text_color="white", fg_color = "grey", font = custom_font)
         #Declare the tabs
         self.search_Tab = self.TabSection.add("Search")
         self.register_Tab = self.TabSection.add("Add new")
@@ -190,6 +190,13 @@ class MainFrame(ctk.CTkFrame):
         search_title_Label = ctk.CTkLabel(self.search_Tab,text="Search Passwords", justify= "left")
         search_title_Label.place(relx = 0.1, rely = 0.05,anchor = NW)
         
+        #-----------Search bar----------
+        self.search_bar_entry = ctk.CTkEntry(self.search_Tab,
+                            placeholder_text = "Search...",
+                            border_width=1,
+                            width = self.winfo_screenwidth())
+        
+        self.search_bar_entry.pack(side="left")
 
 
 class Login_Register_Frame(ctk.CTkToplevel):
@@ -514,7 +521,7 @@ class App(ctk.CTk):
         self.mainFrame.pack(fill = "both", expand = 1)
 
 
-        self.open_login_toplevel()
+        #self.open_login_toplevel()
 
         
 
@@ -534,14 +541,9 @@ if __name__ == "__main__":
     app.mainloop()
 
 """
-Notes:
+TODO:
 
-Create a global password variable wich will be filled as soon as teh user puts in a correct login or registration
-If the variable is still empty after closing the login or registration pages then close the entire app.
+Make basic password searcher UI
 
-It is necesary to manipulate the exit funtion of tkinter
-function logig:
-obtain master password
-if not masterpassword:
-    clse the program using os (lookup the backdoor program in gitub)
+1- Make Searchbar
 """
