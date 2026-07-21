@@ -91,4 +91,4 @@ Bug reports, feature requests, and suggestions are welcome! Please open an issue
 
 ## License
 
-No license specified yet — all rights reserved by the author unless stated otherwise.
+This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute, provided the original copyright notice is included.
